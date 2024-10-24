@@ -1,0 +1,40 @@
+.card-container {
+  background-color: #fff; /* White background for the card */
+  border-radius: 10px; /* Rounded corners */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  overflow: hidden; /* Prevents overflow of content */
+  margin: 10px; /* Space around the card */
+  width: 350px; /* Fixed width for the card */
+  height: 350px; /* Fixed height for the card */
+  display: flex; /* Use flexbox for layout */
+  flex-direction: column; /* Align items vertically */
+  justify-content: flex-start; /* Align items to the top */
+}
+
+.card-content {
+  padding: 20px; /* Inner padding for content */
+  text-align: center; /* Center-align text */
+  flex: 1; /* Allow card content to grow and fill the container */
+}
+
+.card-title {
+  font-size: 1.5rem; /* Title font size */
+  color: #065cae; /* Title color */
+  margin-bottom: 10px; /* Space below title */
+}
+
+.card-image {
+  width: 100%; /* Make the image responsive */
+  height: auto; /* Maintain the aspect ratio */
+  max-height: 200px; /* Set a max height to prevent overflow */
+  object-fit: cover; /* Crop the image if necessary to fill the area */
+  border-radius: 8px; /* Optional: rounded corners for images */
+  margin-top: 10px; /* Space between title and image */
+}
+
+/* Optional: Add hover effects for the card */
+.card-container:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Enhance shadow on hover */
+  transform: translateY(-5px); /* Lift effect on hover */
+  transition: transform 0.3s, box-shadow 0.3s; /* Smooth transition */
+}

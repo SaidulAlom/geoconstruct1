@@ -1,0 +1,916 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/L.Control.Locate.min.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-control-geocoder.Geocoder.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
+        <style>
+        #map {
+            width: 955px;
+            height: 714px;
+        }
+        </style>
+        <title></title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/L.Control.Locate.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-control-geocoder.Geocoder.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="data/AssamDistricts_0.js"></script>
+        <script src="data/Railway_Station_1853_1.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString' || e.target.feature.geometry.type === 'MultiLineString') {
+              highlightLayer.setStyle({
+                color: '#ffff00',
+              });
+            } else {
+              highlightLayer.setStyle({
+                fillColor: '#ffff00',
+                fillOpacity: 1
+              });
+            }
+        }
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:1
+        }).fitBounds([[23.65995318672431,89.58935591572677],[28.617236201364427,96.22459568110884]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // add class to format popup if it contains media
+		function addClassToPopupIfMedia(content, popup) {
+			var tempDiv = document.createElement('div');
+			tempDiv.innerHTML = content;
+			if (tempDiv.querySelector('td img')) {
+				popup._contentNode.classList.add('media');
+					// Delay to force the redraw
+					setTimeout(function() {
+						popup.update();
+					}, 10);
+			} else {
+				popup._contentNode.classList.remove('media');
+			}
+		}
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        function pop_AssamDistricts_0(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Name'] !== null ? autolinker.link(feature.properties['Name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['description'] !== null ? autolinker.link(feature.properties['description'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['timestamp'] !== null ? autolinker.link(feature.properties['timestamp'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['begin'] !== null ? autolinker.link(feature.properties['begin'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['end'] !== null ? autolinker.link(feature.properties['end'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['altitudeMode'] !== null ? autolinker.link(feature.properties['altitudeMode'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['tessellate'] !== null ? autolinker.link(feature.properties['tessellate'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['extrude'] !== null ? autolinker.link(feature.properties['extrude'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['visibility'] !== null ? autolinker.link(feature.properties['visibility'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['drawOrder'] !== null ? autolinker.link(feature.properties['drawOrder'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['icon'] !== null ? autolinker.link(feature.properties['icon'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['District'] !== null ? autolinker.link(feature.properties['District'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['STATE'] !== null ? autolinker.link(feature.properties['STATE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['REMARKS'] !== null ? autolinker.link(feature.properties['REMARKS'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['State_LGD'] !== null ? autolinker.link(feature.properties['State_LGD'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['DISTRICT_L'] !== null ? autolinker.link(feature.properties['DISTRICT_L'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Shape_Leng'] !== null ? autolinker.link(feature.properties['Shape_Leng'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Shape_Area'] !== null ? autolinker.link(feature.properties['Shape_Area'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_AssamDistricts_0_0(feature) {
+            switch(String(feature.properties['District'])) {
+                case 'BAKSA':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(221,134,120,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'BARPETA':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(200,28,126,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'BISWANATH':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(114,128,207,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'BONGAIGAON':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(113,209,137,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'CACHAR':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(101,207,221,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'CHARAIDEO':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(16,221,173,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'CHIRANG':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(236,199,16,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'DARRANG':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(229,33,213,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'DHEMAJI':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(222,117,159,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'DHUBRI':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(188,69,235,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'DIBRUGARH':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(216,68,100,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'DIMA HASAO':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(60,222,157,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'GOALPARA':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(80,41,236,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'GOLAGHAT':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(133,186,236,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HAILAKANDI':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(190,221,49,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HOJAI':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(160,214,67,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'JORHAT':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(73,115,200,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'KAMRUP METRO':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(46,169,222,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'KAMRUP RURAL':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(14,219,99,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'KARBI ANGLONG':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(109,215,67,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'KARIMGANJ':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(224,174,73,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'KOKRAJHAR':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(232,28,38,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'LAKHIMPUR':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(129,24,215,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'MAJULI':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(240,31,188,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'MARIGAON':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(217,220,48,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'NAGAON':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(203,79,26,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'NALBARI':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(107,230,224,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'SIBSAGAR':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(202,104,213,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'SONITPUR':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(55,234,31,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'SOUTH SALMARA MANCACHAR':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(119,218,125,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'TINSUKIA':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(99,97,220,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'UDALGURI':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(141,206,84,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'WEST KARBI ANGLONG':
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(227,131,42,1.0)',
+                interactive: true,
+            }
+                    break;
+                default:
+                    return {
+                pane: 'pane_AssamDistricts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(168,136,223,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_AssamDistricts_0');
+        map.getPane('pane_AssamDistricts_0').style.zIndex = 400;
+        map.getPane('pane_AssamDistricts_0').style['mix-blend-mode'] = 'normal';
+        var layer_AssamDistricts_0 = new L.geoJson(json_AssamDistricts_0, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_AssamDistricts_0',
+            layerName: 'layer_AssamDistricts_0',
+            pane: 'pane_AssamDistricts_0',
+            onEachFeature: pop_AssamDistricts_0,
+            style: style_AssamDistricts_0_0,
+        });
+        bounds_group.addLayer(layer_AssamDistricts_0);
+        map.addLayer(layer_AssamDistricts_0);
+        function pop_Railway_Station_1853_1(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['OGC_FID'] !== null ? autolinker.link(feature.properties['OGC_FID'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['TYPE'] !== null ? autolinker.link(feature.properties['TYPE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['IDENT'] !== null ? autolinker.link(feature.properties['IDENT'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['LAT'] !== null ? autolinker.link(feature.properties['LAT'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['LONG'] !== null ? autolinker.link(feature.properties['LONG'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['ALTITUDE'] !== null ? autolinker.link(feature.properties['ALTITUDE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['LTIME'] !== null ? autolinker.link(feature.properties['LTIME'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['PRB_CODE'] !== null ? autolinker.link(feature.properties['PRB_CODE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['SORT_ID'] !== null ? autolinker.link(feature.properties['SORT_ID'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['DMMC'] !== null ? autolinker.link(feature.properties['DMMC'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['SL_NO'] !== null ? autolinker.link(feature.properties['SL_NO'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NAME'] !== null ? autolinker.link(feature.properties['NAME'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['TYP'] !== null ? autolinker.link(feature.properties['TYP'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['R_CIRCLE'] !== null ? autolinker.link(feature.properties['R_CIRCLE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['GP'] !== null ? autolinker.link(feature.properties['GP'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['VILL_NAME'] !== null ? autolinker.link(feature.properties['VILL_NAME'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['P_DATE'] !== null ? autolinker.link(feature.properties['P_DATE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['GPS_UNIT'] !== null ? autolinker.link(feature.properties['GPS_UNIT'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['WAYPOINT'] !== null ? autolinker.link(feature.properties['WAYPOINT'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['REMARKS'] !== null ? autolinker.link(feature.properties['REMARKS'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['DIST_NAME'] !== null ? autolinker.link(feature.properties['DIST_NAME'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['LAYER'] !== null ? autolinker.link(feature.properties['LAYER'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['PATH'] !== null ? autolinker.link(feature.properties['PATH'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['ASCII_ID'] !== null ? autolinker.link(feature.properties['ASCII_ID'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Railway_Station_1853_1_0() {
+            return {
+                pane: 'pane_Railway_Station_1853_1',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(183,72,75,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Railway_Station_1853_1');
+        map.getPane('pane_Railway_Station_1853_1').style.zIndex = 401;
+        map.getPane('pane_Railway_Station_1853_1').style['mix-blend-mode'] = 'normal';
+        var layer_Railway_Station_1853_1 = new L.geoJson(json_Railway_Station_1853_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Railway_Station_1853_1',
+            layerName: 'layer_Railway_Station_1853_1',
+            pane: 'pane_Railway_Station_1853_1',
+            onEachFeature: pop_Railway_Station_1853_1,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_Railway_Station_1853_1_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_Railway_Station_1853_1);
+        map.addLayer(layer_Railway_Station_1853_1);
+        var osmGeocoder = new L.Control.Geocoder({
+            collapsed: true,
+            position: 'topleft',
+            text: 'Search',
+            title: 'Testing'
+        }).addTo(map);
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .className += ' fa fa-search';
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .title += 'Search for a place';
+        var baseMaps = {};
+        var overlaysTree = [
+            {label: '<img src="legend/Railway_Station_1853_1.png" /> Railway_Station_1853', layer: layer_Railway_Station_1853_1},
+            {label: 'Assam Districts<br /><table><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_BAKSA0.png" /></td><td>BAKSA</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_BARPETA1.png" /></td><td>BARPETA</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_BISWANATH2.png" /></td><td>BISWANATH</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_BONGAIGAON3.png" /></td><td>BONGAIGAON</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_CACHAR4.png" /></td><td>CACHAR</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_CHARAIDEO5.png" /></td><td>CHARAIDEO</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_CHIRANG6.png" /></td><td>CHIRANG</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_DARRANG7.png" /></td><td>DARRANG</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_DHEMAJI8.png" /></td><td>DHEMAJI</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_DHUBRI9.png" /></td><td>DHUBRI</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_DIBRUGARH10.png" /></td><td>DIBRUGARH</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_DIMAHASAO11.png" /></td><td>DIMA HASAO</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_GOALPARA12.png" /></td><td>GOALPARA</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_GOLAGHAT13.png" /></td><td>GOLAGHAT</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_HAILAKANDI14.png" /></td><td>HAILAKANDI</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_HOJAI15.png" /></td><td>HOJAI</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_JORHAT16.png" /></td><td>JORHAT</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_KAMRUPMETRO17.png" /></td><td>KAMRUP METRO</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_KAMRUPRURAL18.png" /></td><td>KAMRUP RURAL</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_KARBIANGLONG19.png" /></td><td>KARBI ANGLONG</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_KARIMGANJ20.png" /></td><td>KARIMGANJ</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_KOKRAJHAR21.png" /></td><td>KOKRAJHAR</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_LAKHIMPUR22.png" /></td><td>LAKHIMPUR</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_MAJULI23.png" /></td><td>MAJULI</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_MARIGAON24.png" /></td><td>MARIGAON</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_NAGAON25.png" /></td><td>NAGAON</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_NALBARI26.png" /></td><td>NALBARI</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_SIBSAGAR27.png" /></td><td>SIBSAGAR</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_SONITPUR28.png" /></td><td>SONITPUR</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_SOUTHSALMARAMANCACHAR29.png" /></td><td>SOUTH SALMARA MANCACHAR</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_TINSUKIA30.png" /></td><td>TINSUKIA</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_UDALGURI31.png" /></td><td>UDALGURI</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_WESTKARBIANGLONG32.png" /></td><td>WEST KARBI ANGLONG</td></tr><tr><td style="text-align: center;"><img src="legend/AssamDistricts_0_33.png" /></td><td></td></tr></table>', layer: layer_AssamDistricts_0},]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: false, 
+        });
+        lay.addTo(map);
+		document.addEventListener("DOMContentLoaded", function() {
+            // set new Layers List height which considers toggle icon
+            function newLayersListHeight() {
+                var layerScrollbarElement = document.querySelector('.leaflet-control-layers-scrollbar');
+                if (layerScrollbarElement) {
+                    var layersListElement = document.querySelector('.leaflet-control-layers-list');
+                    var originalHeight = layersListElement.style.height 
+                        || window.getComputedStyle(layersListElement).height;
+                    var newHeight = parseFloat(originalHeight) - 50;
+                    layersListElement.style.height = newHeight + 'px';
+                }
+            }
+            var isLayersListExpanded = true;
+            var controlLayersElement = document.querySelector('.leaflet-control-layers');
+            var toggleLayerControl = document.querySelector('.leaflet-control-layers-toggle');
+            // toggle Collapsed/Expanded and apply new Layers List height
+            toggleLayerControl.addEventListener('click', function() {
+                if (isLayersListExpanded) {
+                    controlLayersElement.classList.remove('leaflet-control-layers-expanded');
+                } else {
+                    controlLayersElement.classList.add('leaflet-control-layers-expanded');
+                }
+                isLayersListExpanded = !isLayersListExpanded;
+                newLayersListHeight()
+            });	
+			// apply new Layers List height if toggle layerstree
+			if (controlLayersElement) {
+				controlLayersElement.addEventListener('click', function(event) {
+					var toggleLayerHeaderPointer = event.target.closest('.leaflet-layerstree-header-pointer span');
+					if (toggleLayerHeaderPointer) {
+						newLayersListHeight();
+					}
+				});
+			}
+            // Collapsed/Expanded at Start to apply new height
+            setTimeout(function() {
+                toggleLayerControl.click();
+            }, 10);
+            setTimeout(function() {
+                toggleLayerControl.click();
+            }, 10);
+            // Collapsed touch/small screen
+            var isSmallScreen = window.innerWidth < 650;
+            if (isSmallScreen) {
+                setTimeout(function() {
+                    controlLayersElement.classList.remove('leaflet-control-layers-expanded');
+                    isLayersListExpanded = !isLayersListExpanded;
+                }, 500);
+            }  
+        });       
+        setBounds();
+        </script>
+    </body>
+</html>

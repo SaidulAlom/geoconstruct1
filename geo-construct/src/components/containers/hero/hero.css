@@ -1,0 +1,125 @@
+/* hero.css */
+
+/* General reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* Hero section with background image */
+.hero-section {
+    height: auto; /* Allow height to adjust based on content */
+    font-weight: bold;
+    position: relative; /* Ensure positioning for the pseudo-element */
+    overflow: hidden; /* Prevent overflow of the blurred background */
+    z-index: 1; /* Ensure hero is behind the navbar */
+    padding: 2rem 0; /* Add padding for better spacing */
+}
+
+/* Background image with blur */
+.hero-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../../../assets/world-map-297446_1920.png'); /* Add the background image */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(5px); /* Blur effect on the background image */
+    z-index: 1; /* Layer it below the content */
+}
+
+/* Optional overlay for better text readability */
+.hero-section::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4); /* Dark overlay */
+    z-index: 2; /* Overlay above the blurred image */
+}
+
+.hero-content {
+    width: 80%;
+    margin: 0 auto; /* Center the content */
+    display: flex;
+    flex-direction: column; /* Stack items vertically */
+    align-items: center; /* Center items horizontally */
+    padding: 2rem; /* Reduced padding for smaller screens */
+    position: relative;
+    z-index: 3; /* Make sure content appears above the overlay */
+    transition: transform 0.4s ease-in-out;
+}
+
+/* Text styling */
+.hero-text {
+    text-align: center; /* Center text */
+}
+
+.hero-text h2 {
+    font-size: 2rem; /* Adjusted default font size */
+    color: #fff; /* White text to contrast with dark overlay */
+    transition: color 0.4s ease-in-out;
+}
+
+.hero-text h2:hover {
+    color: #1abc9c; /* Text color change on hover */
+}
+
+/* Subheading motion */
+.subheading {
+    font-size: 1.5rem; /* Adjusted size for subheading */
+    opacity: 0;
+    animation: fadeInUp 1s forwards;
+    color: #fff;
+}
+
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 0; /* Padding to ensure text has space */
+    }
+
+    .hero-content {
+        padding: 1rem; /* Further reduce padding for smaller screens */
+    }
+
+    .hero-text h2 {
+        font-size: 1.8rem; /* Adjust size for smaller screens */
+    }
+
+    .subheading {
+        font-size: 1.5rem; /* Adjust subheading size */
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-text h2 {
+        font-size: 1.5rem; /* Further reduce size for very small screens */
+    }
+
+    .subheading {
+        font-size: 1.2rem; /* Further reduce subheading size */
+    }
+}

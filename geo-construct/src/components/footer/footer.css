@@ -1,0 +1,114 @@
+/* General Styles */
+.footer-container {
+    padding: 20px 50px;
+    background-color: #1e1e2f;
+    color: #f1f1f1;
+  }
+  
+  .footer-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  
+  .footer-section {
+    font-size: 14px;
+  }
+  
+  .footer-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #ff6f61;
+  }
+  
+  .footer-text p,
+  .footer-link {
+    margin: 5px 0;
+  }
+  
+  .footer-text p {
+    color: #ffffff;
+    text-decoration: none;
+  }
+  
+  /* Social Icons */
+  .social-icons {
+    display: flex;
+    justify-content: space-between;
+    width: 80%;
+    padding-top: 10px;
+  }
+  
+  .social-icon {
+    background-color: #ff6f61;
+    padding: 10px;
+    border-radius: 50%;
+    text-decoration: none;
+    color: white;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+  }
+  
+  .social-icon:hover {
+    transform: scale(1.2);
+    background-color: #f39c12;
+  }
+  
+  /* Footer Links */
+  .footer-link {
+    display: block;
+    margin: 5px 0;
+    color: #d3d3d3;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  
+  .footer-link:hover {
+    color: #ff6f61;
+    text-decoration: underline;
+  }
+  
+  /* Contact Items */
+  .contact-item {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+  }
+  
+  .contact-item .icon {
+    margin-right: 10px;
+  }
+  
+  /* Footer Bottom */
+  .footer-bottom {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    font-size: 14px;
+  }
+  
+  .footer-bottom .icon {
+    margin-right: 5px;
+  }
+  
+  /* Responsive Styles */
+  @media (max-width: 768px) {
+    .footer-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .footer-grid {
+      grid-template-columns: 1fr;
+    }
+    .footer-container {
+      padding: 20px;
+    }
+    .social-icons {
+      justify-content: space-between;
+      width: 100%;
+    }
+  }
+  

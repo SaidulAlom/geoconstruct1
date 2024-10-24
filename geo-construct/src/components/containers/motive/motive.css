@@ -1,0 +1,26 @@
+.motive-container {
+    background-color: #f0fff4; /* Light green background */
+    border-radius: 10px; /* Rounded corners */
+    padding: 20px; /* Inner padding */
+  }
+  
+  .motive-title {
+    font-size: 1.5rem; /* Title font size */
+    margin-bottom: 1rem; /* Space below title */
+  }
+  
+  .motive-item {
+    display: flex; /* Flex layout for items */
+    align-items: center; /* Center items vertically */
+    padding: 0.5rem 0; /* Vertical padding for each item */
+  }
+  
+  .motive-icon {
+    font-size: 1.5rem; /* Icon size */
+    margin-right: 0.5rem; /* Space between icon and text */
+  }
+  
+  .motive-text {
+    font-size: 1.2rem; /* Text size */
+  }
+  
